@@ -55,8 +55,6 @@ class Manifest {
 
       } else {
 
-        //God willing, this is where a directories node would come in handy, God willing.
-        //Assuming it already was built
         return size + child.calculateSize()
       }
     }, this.size)

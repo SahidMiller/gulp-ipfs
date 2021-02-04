@@ -31,7 +31,13 @@ module.exports = function(opts) {
 
       //Build
       const publishedHash = await (await getManifest).recalculate()
-      console.log("Published " + opts.name + " hash: " + publishedHash)
+      
+      console.log((opts.name ? 
+        "Published " + opts.name + " hash: " : 
+        "Published hash: ") + publishedHash)
+
+      opts.verbose && console.log("----------------------")
+
       cb(null, publishedHash)
 
     } catch (error) {
