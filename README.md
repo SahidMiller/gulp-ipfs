@@ -1,6 +1,10 @@
 # gulp-ipfs
 
-Command line utility and developer tool for publishing files to IPFS/IPNS and monitoring for changes.
+Command line utility and developer tool for publishing files to IPFS/IPNS and monitoring for changes. 
+
+| :zap:        For IPNS: start go-ipfs with `--enable-pubsub-experiment --enable-namesys-pubsub` |
+|------------------------------------------------------------------------------------------------|
+
 
 ## Usage
 
