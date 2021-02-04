@@ -1,21 +1,24 @@
 # gulp-ipfs
-# Usage
 
-## As global cli
+Command line utility and developer tool for publishing files to IPFS/IPNS and monitoring for changes.
 
-### Install
+## Usage
+
+### As global cli
+
+#### Install
 ```
 npm install -g sahidmiller/gulp-ipfs
 ```
 
-### Example
+#### Example
 
 ```
 cd ./my-ipfs-project
 gulp-ipfs --config="/c/ipfs-config.json" --key="api" --path="/c/test/repo"
 ```
 
-### Command line options
+#### Command line options
 
 The following command line options are available:
 
@@ -38,15 +41,15 @@ Config file is a valid JSON file with the following properties:
 |**`name`**|no|`{string}`|`undefined`| Interval to republish campaigns via libp2p after refreshing preload node IPNS subscriptions|
 |**`libp2p_key`**|no|`{Object{ pem:string, password:string }|String}`|`undefined`| Private key import for libp2p node identity. Passed to Libp2p.create options. Use this if you want a consistent libp2p peer-id. If string, will import from remote node |
 
-## As library
+### As library
 
-### Install
+#### Install
 
 ```
 npm install --save-dev sahidmiller/gulp-ipfs
 ```
 
-### Example
+#### Example
 
 ```
 import cache from 'gulp-cache'
@@ -78,7 +81,7 @@ gulp.src("/**/*")
   }))
 ```
 
-### Configuration
+#### Configuration
 
 |Name|Required|Type|Default|Description|
 |:--:|:-----:|:--:|:-----:|:----------|
