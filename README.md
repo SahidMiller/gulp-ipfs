@@ -88,7 +88,7 @@ gulp.src("/**/*")
 
 |Name|Required|Type|Default|Description|
 |:--:|:-----:|:--:|:-----:|:----------|
-|**`name`**|no|`{string}`|`undefined`| Interval to republish campaigns via libp2p after refreshing preload node IPNS subscriptions|
+|**`name`**|no|`{string}`|`undefined`| Name for differentiating multiple instances |
 |**`remote_ipfs`**|yes|`Object { api: string, multiaddress: string }`|`undefined`| API and multiaddress for your local go-ipfs node. We use API to upload objects and multiaddress to publish IPNS updates |
 |**`publishing_key`**|yes|`{string}`|`undefined`| Key name to use for publishing. Gulp-ipfs will fetch this key from remote |
 |**`libp2p_key`**|no|`Object{ pem:string, password:string }\|PrivateKey\|String`|`undefined`| Private key import for libp2p node identity. Passed to Libp2p.create options. Use this if you want a consistent libp2p peer-id. If string, will import from remote node |
