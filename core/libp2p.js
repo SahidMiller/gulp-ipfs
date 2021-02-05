@@ -4,8 +4,9 @@ const { NOISE } = require('libp2p-noise')
 const MPLEX = require('libp2p-mplex')
 const GossipSub = require('libp2p-gossipsub')
 const PeerId = require('peer-id')
+const retry = require('p-retry')
 
-module.exports = async function startLibp2p(opts) {
+module.exports = async function startLibp2p(opts, multiaddresses) {
 
   let libp2pOptions = {
     modules: {
@@ -16,32 +17,25 @@ module.exports = async function startLibp2p(opts) {
     }
   }
 
-  if (opts.libp2p_key) {
+  if (opts.libp2pKey) {
     
+    const libp2pKey = opts.libp2pKey
+    const libp2pKeyType = typeof libp2pKey
+    const pem = libp2pKey && libp2pKey.pem
+    const password = libp2pKey && libp2pKey.password
+
     let privateKey 
 
-    if (opts.libp2p_key.pem && opts.libp2p_key.password) {
-      privateKey = await getKeyFromPem(opts.libp2p_key.pem, opts.libp2p_key.password)
-    }
-
-    const libp2pKeyType = typeof opts.libp2p_key
-    
-    if (Object.values(crypto.supportedKeys).find(keyType => libp2pKeyType === keyType)) {
-      privateKey = opts.libp2p_key
+    if (pem && password) {
+      privateKey = await getKeyFromPem(pem, password)
+    } else if (Object.values(crypto.supportedKeys).find(keyType => libp2pKeyType === keyType)) {
+      privateKey = libp2pKey
     } else {
-      throw "Invalid libp2p_key option."
+      throw "Invalid libp2pKey option."
     }
 
     const peerIdString = uint8ArrayFromString(privateKey.id, 'base58btc')
     libp2pOptions.peerId = new PeerId(peerIdString, privateKey)
-  }
-
-  if (!opts.remote_ipfs || !opts.remote_ipfs.multiaddrs) {
-    throw "Invalid options. 'remote_ipfs' property is required."
-  }
-
-  if (!opts.remote_ipfs || !opts.remote_ipfs.multiaddrs) {
-    throw "Invalid remote_ipfs option. `multiaddrs` property is required."
   }
 
   const libp2p = await Libp2p.create(libp2pOptions)
@@ -51,11 +45,23 @@ module.exports = async function startLibp2p(opts) {
   }
 
   await libp2p.start()
-  await libp2p.dial(opts.remote_ipfs.multiaddrs)
+  await retry(async (attempt) => {
+    const multiaddrs = multiaddresses[attempt - 1]
+
+    if (opts.verbose) {
+      console.log("Trying address: " + multiaddrs)
+    }
+    
+    return await libp2p.dial(multiaddrs)
+
+  }, { 
+    retries: multiaddresses.length, 
+    minTimeout: 2000 
+  });
   
   if (opts.verbose) {
     console.log("connected to peer")
   }
-  
+
   return libp2p
 }

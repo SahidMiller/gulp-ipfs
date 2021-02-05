@@ -1,3 +1,5 @@
+#! /usr/bin/env node
+
 const gulp = require('gulp')
 const gulpIpfs = require('./index')
 const cache = require('gulp-cached')
@@ -7,51 +9,56 @@ const fs = require('fs')
 const path = require('path')
 
 const configFile = argv["config"]
-const keyName = argv["key"]
 const watchDir = path.resolve(argv["path"] || process.cwd()).replace(/\\/g, '/')
 
 if (argv["help"]) {
-	console.log("gulp-ipfs --config=./config-file.json --key=self")
+	console.log(`gulp-ipfs:
+--path      |  string |	Path to upload and watch for changes               | required: false
+--ipfs-api  |  string |	URI to remote ipfs api                             | required: false
+--config    |  string |	Path to configuration file                         | required: false
+--no-ipns   | boolean | Don't update ipns                                  | required: false
+--ipns-key  |  string |	Name of key to publish w/                          | required: if is-remote = false
+--is-remote | boolean |	Do not attempt to pull or save keys from remote    | required: false
+--verbose   | boolean |	Verbose debugging log                              | required: false
+	`)
+
 	return 0
 }
 
-if (!argv["config"]) {
-	console.log("Invalid argument. --config argument required")
-	return 0
-}
 
-if (!argv["key"]) {
-	console.log("Invalid argument. --key argument required")
-	return 0
-}
+let config = {}
 
-let config
-
-try {
+if (configFile) {
 	
-	config = JSON.parse(fs.readFileSync(configFile))
+	try {
+		
+		config = JSON.parse(fs.readFileSync(configFile))
 
-} catch (err) {
-	console.log("Failed to parse config file at path: " + configFile)
-	console.error(err)
-	return 0
+	} catch (err) {
+		console.log("Failed to parse config file at path: " + configFile)
+		console.error(err)
+		return 0
+	}
 }
 
-//TODO God willing: more validation on multiaddrs and api params
-if (!config.remote_ipfs || !config.remote_ipfs.api || !config.remote_ipfs.multiaddrs) {
-	console.log("Invalid configuration file. 'remote_ipfs' property is required")
-	return 0
-}
-
-if (config.libp2p_key && (!config.libp2p_key.pem || !config.libp2p_key.password)) {
-	console.log("CLI only supports password encrypted keys")
-	delete config.libp2p_key
-	return 0
-}
-
-config.publishing_key = keyName
+config.noIpns = argv["no-ipns"]
+config.ipfsApi = argv["ipfs-api"] || config.ipfsApi
+config.isRemote = argv["is-remote"] || config.isRemote || false
+config.publishingKey = !config.isRemote ? argv["ipns-key"] || config.publishingKey : config.publishingKey
 config.verbose = argv["verbose"] || false
 config.seqNum = argv["seq-num"] || config.seqNum || 0
+
+if (!config.isRemote && !config.publishingKey) {
+	console.log("Invalid options. --ipns-key option is required for local node")
+	return 0
+}
+
+//TODO God willing: import from go-node, if not remote.
+if (config.libp2pKey && (!config.libp2pKey.pem || !config.libp2pKey.password)) {
+	console.log("CLI only supports password encrypted keys")
+	delete config.libp2pKey
+	return 0
+}
 
 const processIpfs = gulpIpfs(config)
 

@@ -28,7 +28,7 @@ function recalculateHashes(ipfs, manifest, updatedFilePaths) {
 }
 
 module.exports = async(opts) => {
-  	const ipfs = ipfsClient(opts.remote_ipfs.api)
+  	const ipfs = ipfsClient(opts.ipfsApi || "http://localhost:5001")
 
 	let libp2p
 	let privateKey
@@ -36,38 +36,55 @@ module.exports = async(opts) => {
 
   	try {
 
-  		let publishingId = opts.publishing_key
+  		if (!opts.noIpns) {
 
+	  		let publishingId = opts.publishingKey
+	  		let isRemote = opts.isRemote
 
-		if (!opts.publishing_key) {
-			throw "Invalid options. publishing_key property required"
-		}
+	  		const pem = opts.publishingKey && opts.publishingKey.pem
+	  		const password = opts.publishingKey && opts.publishingKey.password
 
-		if (opts.publishing_key.pem && opts.publishing_key.password) {
-		
-			privateKey = await getKeyFromPem(opts.publishing_key.pem, opts.publishing_key.password)
-			publishingId = await getPublishingKey(privateKey)
-		
-		} else {
-			const keys = await ipfs.key.list()
-
-			if (keys.find(key => key.name === opts.publishing_key)) {
-				privateKey = await getKeyFromLocalIpfs(ipfs, opts.publishing_key)
-			} else {
-				privateKey = await createKey()
+			if (!isRemote && !publishingId) {
+				throw "Invalid options. publishingKey string property is required for local node"
 			}
 
-			publishingId = opts.publishing_key
-		}
+			if (isRemote && (!pem || !password)) {
+				throw "Invalid options. publishingKey.pem and publishingKey.password properties are required for remote node"
+			}
 
-		//This should only run if passing our own pem/password for the first time or passing a key that doesn't exist in remote
-		const keys = await ipfs.key.list()
-		if (!keys.find(key => key.name === publishingId)) {
-			await exportKeyToLocalIpfs(ipfs, publishingId, privateKey)
-		}
+			//Use the provided private key and save to remote ipfs' keys with deterministic name.
+			if (pem && password) {
+			
+				privateKey = await getKeyFromPem(pem, password)
+				publishingId = await getPublishingKey(privateKey)
+			
+			} else {
 
-		libp2p = await createLibp2p(opts)
-		shouldUploadIpns = true 
+				const keys = await ipfs.key.list()
+
+				//If the remote doesn't have the keyname provided, then create a new key.
+				if (keys.find(key => key.name === publishingId)) {
+					privateKey = await getKeyFromLocalIpfs(ipfs, publishingId)
+				} else {
+					privateKey = await createKey()
+				}
+			}
+
+			if (!isRemote) {
+				//This should only run if passing our own pem/password for the first time or passing a key that doesn't exist in remote
+				const keys = await ipfs.key.list()
+				if (!keys.find(key => key.name === publishingId)) {
+					await exportKeyToLocalIpfs(ipfs, publishingId, privateKey)
+				}
+			}
+
+			const { id, addresses } = await ipfs.id()
+			libp2p = await createLibp2p(opts, opts.isRemote ? [
+				"/ip4/127.0.0.1/tcp/4001/p2p/" + id, 
+				...addresses
+			] : addresses)
+			shouldUploadIpns = true 
+		}
 
 	} catch (error) {
 		shouldUploadIpns = false
