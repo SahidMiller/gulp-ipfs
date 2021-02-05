@@ -19,16 +19,17 @@ npm install -g sahidmiller/gulp-ipfs
 
 ```
 cd ./my-ipfs-project
-$ node cli.js --ipfs-api="http://localhost:5001" --path="/c/Kode/webpack-series/" --ipns-key="test-publishing-key"
+$ gulp-ipfs ./static/assets --ipfs-api="http://localhost:5001" --ipns-key="test-publishing-key"
 ```
 
 #### Command line options
+
+`gulp-ipfs <path> --<option> --<option>="value"`
 
 The following command line options are available:
 
 |Name|Required|Type|Default|Description|
 |:--:|:-----:|:--:|:-----:|:----------|
-|**`path`**|no|`{string}`|`process.cwd()`| Path to watch. Defaults to current directory |
 |**`ipfs-api`**|no|`{string}`|`http://localhost:5001`| API URL for go-ipfs node. Required if config isn't passed in. |
 |**`is-remote`**|no|`{boolean}`|`false`| If IPFS API is on remote machine |
 |**`config`**|no|`{string}`|`undefined`| Configuration file path. Required if ipfsApi isn't passed in. |

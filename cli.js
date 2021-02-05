@@ -9,11 +9,11 @@ const fs = require('fs')
 const path = require('path')
 
 const configFile = argv["config"]
-const watchDir = path.resolve(argv["path"] || process.cwd()).replace(/\\/g, '/')
+const watchDir = path.resolve(argv._[0] || process.cwd()).replace(/\\/g, '/')
 
 if (argv["help"]) {
-	console.log(`gulp-ipfs:
---path      |  string |	Path to upload and watch for changes               | required: false
+	console.log(`gulp-ipfs <path>:
+   <path>   |  string |	Path to upload and watch for changes               | required: false
 --ipfs-api  |  string |	URI to remote ipfs api                             | required: false
 --config    |  string |	Path to configuration file                         | required: false
 --no-ipns   | boolean | Don't update ipns                                  | required: false
