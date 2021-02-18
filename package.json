@@ -32,6 +32,7 @@
     "multihashes": "^3.1.0",
     "p-each-series": "^2.2.0",
     "p-retry": "^4.2.0",
+    "p-timeout": "^4.1.0",
     "peer-id": "^0.14.2",
     "through2": "^4.0.2",
     "uint8arrays": "^2.0.5"

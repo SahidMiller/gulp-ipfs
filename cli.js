@@ -42,14 +42,14 @@ if (configFile) {
 }
 
 config.noIpns = argv["no-ipns"]
-config.ipfsApi = argv["ipfs-api"] || config.ipfsApi
+config.ipfsApi = argv["ipfs-api"] || config.ipfsApi || "http://localhost:5001"
 config.isRemote = argv["is-remote"] || config.isRemote || false
 config.publishingKey = !config.isRemote ? argv["ipns-key"] || config.publishingKey : config.publishingKey
 config.verbose = argv["verbose"] || false
 config.seqNum = argv["seq-num"] || config.seqNum || 0
 
-if (!config.isRemote && !config.publishingKey) {
-	console.log("Invalid options. --ipns-key option is required for local node")
+if (!config.noIpns && !config.isRemote && !config.publishingKey) {
+	console.log("Invalid options. --ipns-key option is required for local node IPNS")
 	return 0
 }
 

@@ -45,7 +45,7 @@ module.exports = async(opts) => {
 	  		const password = opts.publishingKey && opts.publishingKey.password
 
 			if (!isRemote && !publishingId) {
-				throw "Invalid options. publishingKey string property is required for local node"
+				throw "Invalid options. publishingKey property is required for local node"
 			}
 
 			if (isRemote && (!pem || !password)) {
@@ -79,7 +79,7 @@ module.exports = async(opts) => {
 			}
 
 			const { id, addresses } = await ipfs.id()
-			libp2p = await createLibp2p(opts, opts.isRemote ? [
+			libp2p = await createLibp2p(opts, !opts.isRemote ? [
 				"/ip4/127.0.0.1/tcp/4001/p2p/" + id, 
 				...addresses
 			] : addresses)

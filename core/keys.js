@@ -8,8 +8,7 @@ const ipns = require('ipns')
 const uint8ArrayToString = require('uint8Arrays/to-string')
 
 async function createKey() {
-	const { privateKey } = await crypto.keys.generateKeyPair('rsa', 2048)
-	return privateKey
+	return await crypto.keys.generateKeyPair('rsa', 2048)
 }
 
 async function getKeyFromPem(rsaKey, password) {

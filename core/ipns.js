@@ -53,21 +53,27 @@ async function publish(ipfs, libp2p, opts, privateKey, hash) {
 
   const hourMs = 60 * 60 * 1000
   const record = await ipns.create(privateKey, hash, opts.seqNum, hourMs);
-  const recordData = ipns.marshal(record);
+  const embedPublicKeyRecord = await ipns.embedPublicKey(privateKey.public, record)
+  await ipns.validate(privateKey.public, embedPublicKeyRecord)
+
+  // for await (const message of ipfs.dht.put('/ipns/' + publishingKey, recordData)) {
+  //   console.log(message)
+  // }
+  
+  const recordData = ipns.marshal(embedPublicKeyRecord);
   const result = await libp2p.pubsub.publish(recordKey, recordData);
 
-  return pRetry(() => {
-    return resolveIPNSKey(ipfs, publishingKey).then((result) => {
+  return pRetry(async () => {
+    const result = await pTimeout(resolveIPNSKey(ipfs, publishingKey), 1000)
 
-      if (result !== "/ipfs/" + hash) {
-        return Promise.reject(new Error("failed check"));
-      } else {
-        return Promise.resolve();
-      }
-    });
+    if (result !== "/ipfs/" + hash) {
+      return Promise.reject(new Error("failed check"));
+    } else {
+      return Promise.resolve();
+    }
+    
   }, { 
-    retries: 5, 
-    minTimeout: 1000 
+    retries: 5 
   }).catch(() => {
     opts.verbose && console.error("Remote peer failed to resolve latest hash. Trying again");
     opts.seqNum += 100
