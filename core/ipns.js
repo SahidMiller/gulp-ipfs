@@ -3,6 +3,7 @@ var last = require('it-last');
 var pRetry = require('p-retry')
 var multihashes = require('multihashes')
 var { getPublishingKey, getSerializedRecordKey } = require('./keys')
+var pTimeout = require('p-timeout')
 
 function waitForPeerToSubscribe(ipfs, topic, peerId) {
   return pRetry(async () => {
@@ -74,8 +75,8 @@ async function publish(ipfs, libp2p, opts, privateKey, hash) {
     
   }, { 
     retries: 5 
-  }).catch(() => {
-    opts.verbose && console.error("Remote peer failed to resolve latest hash. Trying again");
+  }).catch((err) => {
+    opts.verbose && console.error("Remote peer failed to resolve latest hash. Trying again", err);
     opts.seqNum += 100
     return publish(ipfs, libp2p, opts, privateKey, hash);
   })
